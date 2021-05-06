@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage[utf8]{inputenc}
+\usepackage{cite}
+
+\title{Top Down Operator Precedence}
+
+\author{Vaughan R. Pratt \thanks{Work reported herein was supported in part at
+    Stanford by the National Science Foundation under grant no GJ 992, and the
+    Office of Naval Research under grant number N-OOO14-67-A0112-0057 NR
+    044-402; by IBM under a post-doctoral fellowship at Stanford; by the IBM
+    T.J.  Watson Research Center, Yorktown Heights, N.Y,; and by Project MAC, an
+    MIT research Program sponsored by the Advanced Research Projects Agency,
+    Department of Defense, under Office of Naval Research Contract Number
+    NOO014-70-0362-OO06 and the National Science Foundation under contract
+    number GJOO-4327. Reproduction in whole or in part is permitted for any
+    purpose of the United States Government.}}
+
+\date{Massachusetts Institute of Technology 1973}
+\bibliographystyle{apalike}
+
+\begin{document}
+\maketitle
+\section{Survey of the Problem Domain}
+
+There is little agreement on the extent to which syntax should be a
+consideration in the design and implementation of programming languages. At one
+extreme, it is considered vital, and one may go to any lengths
+\cite{10.5555/1098667, mckeeman1970} to provide adequate syntactic
+capabilities. The other extreme is the spartan denial of a need for a rich
+syntax \cite{10.1145/321574.321575}. In between, we find some language
+implementers willing to incorporate as much syntax as possible provided they do
+not have to work hard at it \cite{10.1007/BF00264291}.
+
+\par
+
+In this paper we present what should be a satisfactory compromise for a
+respectably large proportion of language designers and implementers. We have in
+mind particularly
+
+\begin{enumerate}
+  \item those who want to write translators and interpreters (soft, firm or
+    hardwired) for new or extant languages without having to acquire a large
+    system to reduce the labor, and
+  \item those who need a convenient yet efficient language extension mechanism
+    accessible to the language user.
+\end{enumerate}
+
+\par
+
+The approach described below is very simple to understand, trivial to implement,
+easy to use, extremely efficient in practice if not in theory, yet flexible
+enough to meet most reasonable syntactic needs of users in both categories (1)
+and (2) above. (What is "reasonable" is addressed in more detail
+below). Moreover, it deals nicely with error detection.
+
+\par
+
+
+
+\bibliography{top_down_operator_precedence.bib}
+\end{document}
