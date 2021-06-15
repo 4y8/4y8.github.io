@@ -1,0 +1,33 @@
+* Cryptome
+  This document tries to bring many cryptography related algorithms in one
+  place. Be aware that some of them are deprectaed and are included only for
+  historical purposes.
+* Table of Contents :TOC:
+- [[#cryptome][Cryptome]]
+- [[#hashing][Hashing]]
+  - [[#md4][MD4]]
+  - [[#md5][MD5]]
+  - [[#ripemd][ripemd]]
+  - [[#sha-1][sha-1]]
+  - [[#sha-2][sha-2]]
+  - [[#sha-3][sha-3]]
+  - [[#blake2][blake2]]
+  - [[#blake3][blake3]]
+- [[#encryption][Encryption]]
+  - [[#chacha20][ChaCha20]]
+  - [[#blowfish][Blowfish]]
+  - [[#twofish][Twofish]]
+
+* Hashing
+** MD4
+** MD5
+** ripemd
+** sha-1
+** sha-2
+** sha-3
+** blake2
+** blake3
+* Encryption
+** ChaCha20
+** Blowfish
+** Twofish
