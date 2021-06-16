@@ -7,7 +7,7 @@
 - [[#hashing][Hashing]]
   - [[#md4][MD4]]
   - [[#md5][MD5]]
-  - [[#ripemd][ripemd]]
+  - [[#ripemd-160][ripemd-160]]
   - [[#sha-1][sha-1]]
   - [[#sha-2][sha-2]]
   - [[#sha-3][sha-3]]
@@ -20,8 +20,25 @@
 
 * Hashing
 ** MD4
+   + [[https://www.rfc-editor.org/rfc/rfc1320.txt][source]]
+   + pseudocode:
+#+BEGIN_SRC python
+  F(x, y, z) = ((y ^ z) & x) ^ z
+  G(x, y, z) =  (x | y) & (x | z) & (y | z)
+  H(x, y, z) = x ^ y ^ z
+
+  round(buf, out):
+      a = out[0]
+      b = out[1]
+      c = out[2]
+      d = out[3]
+#+END_SRC
 ** MD5
-** ripemd
+** ripemd-160
+   + [[https://homes.esat.kuleuven.be/~bosselae/ripemd160/pdf/AB-9601/AB-9601.pdf][source]]
+   + pseudocode:
+#+BEGIN_SRC python
+#+END_SRC
 ** sha-1
 ** sha-2
 ** sha-3
