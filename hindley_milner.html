@@ -9,9 +9,42 @@
   <main>
     <h1>Inférence de type Hindley Milner petit à petit</h1>
     <hr>
-    Premièrement, on doit définir le problème que l'on essaye de résoudre. Le
-    langage que auquel on s'intéresse est un lambda calculus augmenté d'entier
-    et de structures let.
+    Le but de cet article est de décrire et expliquer l'algorithme W,
+    d'inférence de type dans le système de type Hindley-Milner. Les descriptions
+    seront accompagnées de code en OCaml, pour faliciter
+    l'implémentation. Premièrement, on doit définir le problème que l'on essaye
+    de résoudre. Le langage que auquel on s'intéresse est un lambda calculus
+    augmenté d'entier et de structures let. Ainsi, au format BNF, on a la
+    syntaxe suivante : <br>
+    <table class="bnf">
+      <tr>
+        <td> e, e' </td>
+        <td> ::= <td/>
+        <td> e e' </td>
+        <td class="bnf-end"> application </td>
+      </tr>
+      <tr>
+        <td> </td>
+        <td class="bnf-sep"> | <td/>
+        <td> let v = e in e' </td>
+        <td class="bnf-end"> définition </td>
+      </tr>
+      <tr>
+        <td> </td>
+        <td class="bnf-sep"> | <td/>
+        <td> λv.e </td>
+        <td class="bnf-end"> abstraction </td>
+      </tr>
+      <tr>
+        <td> </td>
+        <td class="bnf-sep"> | <td/>
+        <td> n </td>
+        <td class="bnf-end"> entier </td>
+      </tr>
+    </table>
+    On cherche une fonction <italic>inference</italic>, qui prend en argument
+    une expression et renvoie le type de cette-dernière. On commence par le cas
+    le plus simple, l'entier.
   </main>
 </body>
 </html>

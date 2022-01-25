@@ -1,6 +1,9 @@
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&display=swap');
+
 body {
-    font-family: monospace;
-    max-width: 100em;
+    font-family: 'EB Garamond';
+    max-width: 920px;
     text-align: justify;
     display: block;
     margin: auto;
@@ -28,8 +31,29 @@ main {
 body {
     display: flex;
     flex-direction: row;
+    font-size: 14pt;
 }
 
 hr {
     margin-bottom: 1em;
+}
+
+.bnf {
+    margin-left: auto;
+    margin-right: auto;
+    border: 0px;
+}
+
+.bnf-sep {
+    text-align: center;
+}
+
+.bnf-end {
+    padding-left: 20px;
+    text-align: right;
+    font-style: italic;
+}
+
+h1 {
+    font-size: 20pt;
 }
