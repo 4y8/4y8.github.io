@@ -11,9 +11,9 @@
     <hr>
     Le but de cet article est de décrire et expliquer l'algorithme W,
     d'inférence de type dans le système de type Hindley-Milner. Les descriptions
-    seront accompagnées de code en OCaml, pour faliciter
-    l'implémentation. Premièrement, on doit définir le problème que l'on essaye
-    de résoudre. Le langage que auquel on s'intéresse est un lambda calculus
+    seront accompagnées de code en OCaml, pour faliciter l'implémentation et la
+    compréhension. Premièrement, on doit définir le problème que l'on essaye de
+    résoudre. Le langage que auquel on s'intéresse est un lambda calculus
     augmenté d'entier et de structures let. Ainsi, au format BNF, on a la
     syntaxe suivante : <br>
     <table class="bnf">
@@ -42,9 +42,46 @@
         <td class="bnf-end"> entier </td>
       </tr>
     </table>
-    On cherche une fonction <italic>inference</italic>, qui prend en argument
-    une expression et renvoie le type de cette-dernière. On commence par le cas
-    le plus simple, l'entier.
+    On cherche une fonction inference, qui prend en argument une expression et
+    renvoie le type de cette-dernière — le type de cette fonction changera au
+    cours de l'implémentation. Il faut donc, aussi, définir l'ensemble des types
+    qu'on utiliseras — des types seront ajoutés plus tard. Pour l'instant, on
+    considère le type des entiers et celui d'une fonction de dont l'argument est
+    de type t et qui renvoie des valeurs de type t, où t et t' sont d'autres
+    types. Les types seront défini, ainsi :
+    <table class="bnf">
+      <tr>
+        <td> t, t' </td>
+        <td> ::= <td/>
+        <td> int </td>
+        <td class="bnf-end"> entier </td>
+      </tr>
+      <tr>
+        <td> </td>
+        <td class="bnf-sep"> | <td/>
+        <td> t → t' </td>
+        <td class="bnf-end"> fonction </td>
+      </tr>
+    </table>
+    On peut, maintenant, implémenter cette syntaxe rudimentaire en OCaml :
+    <pre>
+type expr
+ = App of expr * expr
+ | Let of string * expr * expr
+ | Lam of string * expr
+ | Var of string
+ | Int of int
+type ty
+ = TInt
+ | TFun of ty * ty</pre>
+
+    On commence par le cas le plus simple, celui d'un entier. Si, on a un entier
+    alors, son type est forcément int. On peut, ainsi, commencer la fonction
+    inference :
+    <pre>
+let rec inference (e : expr) : ty =
+  match e with
+    Int _ -> TInt</pre>
   </main>
 </body>
 </html>
