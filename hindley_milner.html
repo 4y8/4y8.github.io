@@ -10,12 +10,13 @@
     <h1>Inférence de type Hindley Milner petit à petit</h1>
     <hr>
     Le but de cet article est de décrire et expliquer l'algorithme W,
-    d'inférence de type dans le système de type Hindley-Milner. Les descriptions
-    seront accompagnées de code en OCaml, pour faliciter l'implémentation et la
-    compréhension. Premièrement, on doit définir le problème que l'on essaye de
-    résoudre. Le langage que auquel on s'intéresse est un lambda calculus
-    augmenté d'entier et de structures let. Ainsi, au format BNF, on a la
-    syntaxe suivante : <br>
+    d'inférence de type dans le système de type Hindley-Milner. Ce système est
+    utilisé dans les langages de la famille ML (SML, OCaml, etc.). Les
+    descriptions seront accompagnées de code en OCaml, pour faliciter
+    l'implémentation et la compréhension. Premièrement, on doit définir le
+    problème que l'on essaye de résoudre. Le langage que auquel on s'intéresse
+    est un lambda calculus augmenté d'entier et de structures let. Ainsi, au
+    format BNF, on a la syntaxe suivante : <br>
     <table class="bnf">
       <tr>
         <td> e, e' </td>
@@ -59,29 +60,47 @@
       <tr>
         <td> </td>
         <td class="bnf-sep"> | <td/>
-        <td> t → t' </td>
+        <td> t <span class = arrow>-></span> t' </td>
         <td class="bnf-end"> fonction </td>
       </tr>
     </table>
     On peut, maintenant, implémenter cette syntaxe rudimentaire en OCaml :
-    <pre>
-type expr
- = App of expr * expr
- | Let of string * expr * expr
- | Lam of string * expr
- | Var of string
- | Int of int
-type ty
+    <pre class="first last new">
+<span class="k">type</span> expr
+ = App <span class="k">of</span> expr * expr
+ | Let <span class="k">of</span> string * expr * expr
+ | Lam <span class="k">of</span> string * expr
+ | Var <span class="k">of</span> string
+ | Int <span class="k">of</span> int
+<span class="k">type</span> ty
  = TInt
- | TFun of ty * ty</pre>
+ | TFun <span class="k">of</span> ty * ty</pre>
 
     On commence par le cas le plus simple, celui d'un entier. Si, on a un entier
     alors, son type est forcément int. On peut, ainsi, commencer la fonction
     inference :
-    <pre>
-let rec inference (e : expr) : ty =
+    <pre class="first last new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) : ty =
+  <span class="k">match</span> <span class="v">e</span> <span class="k">with</span>
+    Int _ -> TInt</pre>
+
+    Lorsqu'on souhaite inférer les types des variables, on fait face à un
+    problème. En effet, pour l'instant la fonction ne dispose pas d'assez
+    d'information, car si l'argument de la fonction est une variable on ne
+    dispose que de son nom. Pour résoudre ce problème, on ajoute un argument
+    context qui associe à chaque variable défini son type :
+    <pre class="first new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) (<span class="v">ctx</span> : (string * ty) list) : ty =</pre>
+    <pre class="old last">
   match e with
     Int _ -> TInt</pre>
+    
+    Pour inférer le type d'une variable, on n'a plus qu'à le chercher dans le
+    context donné :
+    <pre class="first old">
+    Int _ -> TInt</pre>
+    <pre class="last new">
+  | Var v -> <span class="m">List</span>.assoc ctx v</pre>
   </main>
 </body>
 </html>

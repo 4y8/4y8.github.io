@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=EB+Garamond:ital@0;1&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code&display=swap');
 
 body {
     font-family: 'EB Garamond', serif;
@@ -8,7 +9,7 @@ body {
     display: block;
     margin: auto;
     padding: 1em;
-    background: #282828;
+    background: #32302F;
     color: #ebdbb2;
 }
 
@@ -49,7 +50,7 @@ hr {
 }
 
 .bnf-end {
-    padding-left: 20px;
+    padding-left: 30px;
     text-align: right;
     font-style: italic;
 }
@@ -59,10 +60,61 @@ h1 {
 }
 
 pre {
-    padding: 5px 20px;
-    margin: 10px -18px;
+    padding: 0px 20px;
+    margin: 0px -18px;
     background: #1d2021;
     font-size: 12pt;
     max-width: 100%;
     overflow-x: auto;
+    font-family: 'Fira Code';
+}
+
+.arrow {
+    font-family: 'Fira Code';
+    font-size: 11pt;
+}
+
+pre.first {
+    padding-top: 5px;
+    margin-top: 10px;
+}
+
+pre.last {
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+}
+
+pre.new {
+    border-left-color: #83A598;
+    padding-bottom: 5px;
+    padding-top: 5px;
+    border-left-width: 2px;
+    border-left-style: solid;
+    border-right-color: #83A598;
+    border-right-width: 2px;
+    border-right-style: solid;
+    padding-left: 18px;
+    padding-right: 18px;
+}
+
+pre.old {
+    color: #a89984;
+    background: #282828;
+}
+
+.k {
+    color: #FABD2F;
+    font-weight: bold;
+}
+
+.v {
+    color: #83A598;
+}
+
+.f {
+    color: #B8BB26;
+}
+
+.m {
+    color: #8EC07C;
 }
