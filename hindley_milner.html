@@ -126,7 +126,7 @@
     peut, ensuite, s'assurer que le type de la fonction est bien un type de
     fonction, c'est à dire t&nbsp;<span class = arrow>-></span>&nbsp;t', où t
     est égal à celui de l'argument et t' celui de l'application entière. En
-    effet le type t&nbsp;<span class = arrow>-></span>&nbsp;t' est celui des
+    effet le type t&nbsp;<span class="arrow">-></span>&nbsp;t' est celui des
     fonctions dont l'argument est de type t et la valeur renvoyée de type
     t'. Ainsi, on obtient le code suivant:
     <pre class="first old">
@@ -150,11 +150,12 @@
     end</pre>
     <pre class="last new">
  | Op (e, _, e') ->
-    let t = inference e ctx in
-    let t' = inference e' ctx in
-    if t = TInt && t' = TInt
-    then TInt
-    else failwith "Opérations sur des non-entiers." </pre>
+    <span class="k">let</span> <span class="v">t</span> = inference e ctx <span class="k">in</span>
+    <span class="k">let</span> <span class="v">t'</span> = inference e' ctx <span class="k">in</span>
+    <span class="k">if</span> <span class="v">t</span> = TInt && t' = TInt
+    <span class="k">then</span> TInt
+    <span class="k">else</span> failwith <span class="s">"Opérations sur des non-entiers."</span> </pre>
+
 
     Vient, maintenant, l'inference des λ-expressions, de la forme λv.e, mais on
     fait face à un nouveau problème. En effet, si on souhaite pouvoir utiliser
@@ -188,7 +189,7 @@
     <pre class="new">
 <span class="k">let</span> <span class="v">n_tvar</span> = ref 0
 
-<span class="k">let</span> <span class="f">new_tvar</span> () =
+<span class="k">let</span> <span class="f">new_tvar</span> () : ty =
   <span class="k">let</span> <span class="v">n</span> = !n_tvar in
   n_tvar := n + 1;
   TVar n</pre>
@@ -220,7 +221,7 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
     <pre class="first old">
 type substitution = (int * ty) list</pre>
     <pre class="new">
-<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst</span> (<span class="v">t</span> : ty) (<span class="v">s</span> : substitution) =
+<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst</span> (<span class="v">t</span> : ty) (<span class="v">s</span> : substitution) : ty =
   <span class="k">match</span> t <span class="k">with</span>
     TInt -> TInt
   | TFun (t, t') -> TFun (app_subst t s, app_subst t' s)
@@ -236,7 +237,7 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
     <pre class="first old">
      | Some t -> t</pre>
     <pre class="new">
-<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst_ctx</span> (<span class="v">ctx</span> : context) (<span class="v">s</span> : substitution) =
+<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst_ctx</span> (<span class="v">ctx</span> : context) (<span class="v">s</span> : substitution) : context =
   <span class="k">match</span> <span class="v">ctx</span> <span class="k">with</span>
     [] -> []
   | (v, t) :: tl -> (v, app_subst t s) :: app_subst_ctx ctx s</pre>
@@ -249,22 +250,72 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
     <pre class="first old">
   | (v, t) :: tl -> (v, app_subst t s) :: app_subst_ctx ctx s</pre>
     <pre class="new">
-<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst_subst</span> (<span class="v">s</span>: substitution) (<span class="v">s'</span> : substitution) =
+<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst_subst</span> (<span class="v">s</span>: substitution) (<span class="v">s'</span> : substitution) : substitution =
   <span class="k">match</span> s <span class="k">with</span>
     [] -> []
-  | (n, t) :: tl -> (n, app_subst t s') :: app_subst_subst tl s'</pre>
+  | (n, t) :: tl -> (n, app_subst t s') :: app_subst_subst tl s'
+
+<span class="k">let</span> <span class="k">rec</span> <span class="f">compose_subst</span> (<span class="v">s</span>: substitution) (<span class="v">s'</span> : substitution) : substitution =
+  s' @ (app_subst s s')</pre>
     <pre class="last old">
 let rec inference (e : expr) (ctx : context) : ty =</pre>
-
+titution
     Il faut, maintenant, implémenter l'unification. Par ce procédé, l'algorithme
     génère l'unificateur le plus général de deux types. C'est une substitution
     qui si appliquée au deux types donnés, rendra ces deux types identiques. Si
     les deux types sont constants — par exemple, dans le cas int, int — la
     substitution vide est renvoyée si les deux types sont égaux, et une erreur
     est générée sinon, car il n'existe pas de substitution rendant ces deux
-    types égaux. Si les deux types sont des types de fonction, il faut unifier
-    les deux type de départ et les deux types d'arrivées.
+    types égaux :
+    <pre class="first old">
+  s' @ (app_subst s s')</pre>
+    <pre class="new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">unify</span> (<span class="v">t</span>: ty) (<span class="v">t'</span> : ty) : substitution =
+  <span class="k">match</span> t, t' <span class="k">with</span>
+    TInt, TInt -> []
+  | _, _ -> failwith <span class="s">"Problème d'unification."</span></pre>
+    <pre class="last old">
+let rec inference (e : expr) (ctx : context) : ty =</pre>
 
+    Si les deux types sont des types de fonction, il faut unifier les deux type
+    de départ et les deux types d'arrivées, puis composer les deux substitutions
+    obtenues :
+
+    <pre class="first old">
+    TInt, TInt -> []</pre>
+    <pre class="new">
+  | TFun (d, a), TFun (d', a') ->
+     <span class="k">let</span> <span class="v">s</span> = unify d d' <span class="k">in</span>
+     <span class="k">let</span> <span class="v">s'</span> = unify a a' <span class="k">in</span>
+     compose_subst s s'</pre>
+    <pre class="last old">
+  | _, _ -> failwith "Problème d'unification."</pre>
+
+    On peut, maintenant, implémenter l'unification dans le cas ou un des deux
+    types est une variable de type. On cherche donc à unifier les types t et
+    α. On ne peut se contenter de remplacer α par t. En effet, si t est égal à
+    α&nbsp;<span class="arrow">-></span>&nbsp;α, alors, en remplaçant t par α,
+    on crée une boucle infinie, car α, sera égal à
+    α&nbsp;<span class="arrow">-></span>&nbsp;α, puis à
+    (α&nbsp;<span class="arrow">-></span>&nbsp;α)&nbsp;<span class="arrow">-></span>&nbsp;(α&nbsp;<span class="arrow">-></span>&nbsp;α),
+    etc. On doit, donc, s'assurer qu'α n'apparaisse pas dans t, c'est le test
+    d'occurrence — occurrence check, en anglais.
+    <aside class="note">
+      <p>
+        On peut rencontrer ce test en OCaml. En effet, le bout de code suivant :
+      </p>
+        <pre>
+let rec omega x = x x</pre>
+      <p>
+        cause l'erreur :
+      </p>
+        <pre>
+Error: This expression has type 'a -> 'b
+       but an expression was expected
+       of type 'a
+The type variable 'a occurs inside
+'a -> 'b</pre>
+    </aside>
   </main>
 
 </body>

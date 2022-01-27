@@ -142,6 +142,12 @@ aside.note {
     padding-top: 0px;
 }
 
+aside.note pre {
+    font-size: 8pt;
+    padding: 4px 8px;
+    margin: 4px 0px;
+}
+
 @media screen and (width <= 1520px) {
     aside.note {
         margin-top: 10px;
