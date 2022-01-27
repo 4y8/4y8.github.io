@@ -16,7 +16,16 @@
     l'implémentation et la compréhension. Premièrement, on doit définir le
     problème que l'on essaye de résoudre. Le langage que auquel on s'intéresse
     est un lambda calculus augmenté d'entier, d'opérations sur eux et de
-    structures let. Ainsi, au format BNF, on a la syntaxe suivante&nbsp;: <br>
+    structures let. Ainsi, au format BNF, on a la syntaxe suivante&nbsp;:
+    <aside class="note">
+      <p>
+      Il existe un algorithme d'inférence de type plus performant pour le
+      système de type Hindley-Milner appelé algorithme J. Cependant, il
+      nécessite l'utilisation de plus d'effets de bord. De plus, l'algorithme W
+      est nécessaire afin de prouver la correction de l'algorithme J.
+      </p>
+    </aside>
+    <br>
     <table class="bnf">
       <tr>
         <td> e, e' </td>
@@ -89,7 +98,7 @@
     inference&nbsp;:
     <pre class="first last new">
 <span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) : ty =
-  <span class="k">match</span> <span class="v">e</span> <span class="k">with</span>
+  <span class="k">match</span> e <span class="k">with</span>
     Int _ -> TInt</pre>
 
     Lorsqu'on souhaite inférer les types des variables, on fait face à un
@@ -98,7 +107,9 @@
     dispose que de son nom. Pour résoudre ce problème, on ajoute un argument
     contexte qui associe à chaque variable défini son type&nbsp;:
     <pre class="first new">
-<span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) (<span class="v">ctx</span> : (string * ty) list) : ty =</pre>
+<span class="k">type</span> context = (string * ty) list
+
+<span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) (<span class="v">ctx</span> : context) : ty =</pre>
     <pre class="old last">
   match e with
     Int _ -> TInt</pre>
@@ -181,8 +192,78 @@
   <span class="k">let</span> <span class="v">n</span> = !n_tvar in
   n_tvar := n + 1;
   TVar n</pre>
-    <pre class="old last">
-let rec inference (e : expr) (ctx : (string * ty) list) : ty =</pre>
+    <pre class="last old">
+let rec inference (e : expr) (ctx : context) : ty =</pre>
+
+    Par exemple, au début de l'inférence du type de l'expression λx.(x + 1), qui
+    est de type int&nbsp;<span class = arrow>-></span>&nbsp;int, la variable x
+    aura pour type α. Or les opérandes des opérations ont nécessairement pour
+    type, le type α, devra, donc, être remplacé par int. Il faut, premièrement,
+    représenter le fait que α soit remplacé par int. On défini, donc, une
+    nouvelle structure de données, substitution, qui associe aux variables de
+    type le type par lequel ils sont remplacés :
+    <pre class="first old">
+  n_tvar := n + 1;
+  TVar n</pre>
+    <pre class="new">
+<span class="k">type</span> substitution = (int * ty) list</pre>
+    <pre class="last old">
+let rec inference (e : expr) (ctx : context) : ty =</pre>
+
+    Lors de l'inférence, on sera amené à utiliser ces
+    substitutions. C'est-à-dire à les appliquer sur des types, puis, sur des
+    contextes. Pour cela, si on a une variable de type présente dans la
+    substitution, on remplace la variable de type par sa nouvelle valeur, sinon
+    on ne change pas la variable de type. Si on a un type de fonction, alors, on
+    applique la substitution aux deux types. Dans le cas d'un type constant
+    comme int, on ne change pas le type. Ainsi, on a :
+    <pre class="first old">
+type substitution = (int * ty) list</pre>
+    <pre class="new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst</span> (<span class="v">t</span> : ty) (<span class="v">s</span> : substitution) =
+  <span class="k">match</span> t <span class="k">with</span>
+    TInt -> TInt
+  | TFun (t, t') -> TFun (app_subst t s, app_subst t' s)
+  | TVar n ->
+     <span class="k">match</span> <span class="m">List</span>.assoc_opt s n <span class="k">with</span>
+       None -> TVar n
+     | Some t -> t</pre>
+    <pre class="last old">
+let rec inference (e : expr) (ctx : context) : ty =</pre>
+
+    Pour appliquer une substitution à un contexte, il suffit d'appliquer la
+    substitution aux types de toutes les variables présentes dans le contexte :
+    <pre class="first old">
+     | Some t -> t</pre>
+    <pre class="new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst_ctx</span> (<span class="v">ctx</span> : context) (<span class="v">s</span> : substitution) =
+  <span class="k">match</span> <span class="v">ctx</span> <span class="k">with</span>
+    [] -> []
+  | (v, t) :: tl -> (v, app_subst t s) :: app_subst_ctx ctx s</pre>
+    <pre class="last old">
+let rec inference (e : expr) (ctx : context) : ty =</pre>
+
+    On a, également, besoin d'une opération pour composer deux
+    substitutions. Pour cela on applique la deuxième substitution aux types de
+    la première, puis on concatène les deux :
+    <pre class="first old">
+  | (v, t) :: tl -> (v, app_subst t s) :: app_subst_ctx ctx s</pre>
+    <pre class="new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">app_subst_subst</span> (<span class="v">s</span>: substitution) (<span class="v">s'</span> : substitution) =
+  <span class="k">match</span> s <span class="k">with</span>
+    [] -> []
+  | (n, t) :: tl -> (n, app_subst t s') :: app_subst_subst tl s'</pre>
+    <pre class="last old">
+let rec inference (e : expr) (ctx : context) : ty =</pre>
+
+    Il faut, maintenant, implémenter l'unification. Par ce procédé, l'algorithme
+    génère l'unificateur le plus général de deux types. C'est une substitution
+    qui si appliquée au deux types donnés, rendra ces deux types identiques. Si
+    les deux types sont constants — par exemple, dans le cas int, int — la
+    substitution vide est renvoyée si les deux types sont égaux, et une erreur
+    est générée sinon, car il n'existe pas de substitution rendant ces deux
+    types égaux. Si les deux types sont des types de fonction, il faut unifier
+    les deux type de départ et les deux types d'arrivées.
 
   </main>
 
