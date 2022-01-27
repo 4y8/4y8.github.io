@@ -4,13 +4,16 @@
 
 body {
     font-family: 'EB Garamond', serif;
-    max-width: 820px;
     text-align: justify;
     display: block;
     margin: auto;
     padding: 1em;
     background: #32302F;
-    color: #ebdbb2;
+    color: #FBF1C7;
+    line-height: 1.6;
+    font-size: 14pt;
+    display: flex;
+    flex-direction: row;
 }
 
 a {
@@ -25,14 +28,12 @@ aside {
 }
 
 main {
+    margin-left: 25%;
+    max-width: 50%;
     flex-grow: 1;
     display: block;
-}
-
-body {
-    display: flex;
-    flex-direction: row;
-    font-size: 14pt;
+    padding-left: 10px;
+    padding-right: 10px;
 }
 
 hr {
@@ -43,6 +44,12 @@ hr {
     margin-left: auto;
     margin-right: auto;
     border: 0px;
+}
+
+table.bnf {
+    margin-top: 10px;
+    margin-bottom: 10px;
+    line-height: normal;
 }
 
 .bnf-sep {
@@ -60,13 +67,14 @@ h1 {
 }
 
 pre {
-    padding: 0px 20px;
+    padding: 8px 20px;
     margin: 0px -18px;
     background: #1d2021;
     font-size: 12pt;
     max-width: 100%;
     overflow-x: auto;
     font-family: 'Fira Code';
+    line-height: normal;
 }
 
 .arrow {
@@ -75,19 +83,15 @@ pre {
 }
 
 pre.first {
-    padding-top: 5px;
     margin-top: 10px;
 }
 
 pre.last {
-    padding-bottom: 5px;
     margin-bottom: 10px;
 }
 
 pre.new {
     border-left-color: #83A598;
-    padding-bottom: 5px;
-    padding-top: 5px;
     border-left-width: 2px;
     border-left-style: solid;
     border-right-color: #83A598;
@@ -116,5 +120,24 @@ pre.old {
 }
 
 .m {
+    color: #D3869B;
+}
+
+.s {
     color: #8EC07C;
+}
+
+aside.note {
+    border-top-color: #83A598;
+    border-top-width: 1px;
+    border-top-style: solid;
+    border-bottom-color: #83A598;
+    border-bottom-width: 1px;
+    border-bottom-style: solid;
+    position: absolute;
+    font-size: 11pt;
+    line-height: 1.2;
+    width: 15%;
+    right: 5%;
+    padding-top: 0px;
 }

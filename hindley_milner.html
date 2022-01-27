@@ -15,8 +15,8 @@
     descriptions seront accompagnées de code en OCaml, pour faliciter
     l'implémentation et la compréhension. Premièrement, on doit définir le
     problème que l'on essaye de résoudre. Le langage que auquel on s'intéresse
-    est un lambda calculus augmenté d'entier et de structures let. Ainsi, au
-    format BNF, on a la syntaxe suivante : <br>
+    est un lambda calculus augmenté d'entier, d'opérations sur eux et de
+    structures let. Ainsi, au format BNF, on a la syntaxe suivante&nbsp;: <br>
     <table class="bnf">
       <tr>
         <td> e, e' </td>
@@ -42,14 +42,20 @@
         <td> n </td>
         <td class="bnf-end"> entier </td>
       </tr>
+        <td> </td>
+        <td class="bnf-sep"> | <td/>
+        <td> e (+ | - | * | /) e' </td>
+        <td class="bnf-end"> opération </td>
+      <tr>
+      </tr>
     </table>
     On cherche une fonction inference, qui prend en argument une expression et
     renvoie le type de cette-dernière — le type de cette fonction changera au
     cours de l'implémentation. Il faut donc, aussi, définir l'ensemble des types
-    qu'on utiliseras — des types seront ajoutés plus tard. Pour l'instant, on
+    que l'on utilisera — des types seront ajoutés plus tard. Pour l'instant, on
     considère le type des entiers et celui d'une fonction de dont l'argument est
     de type t et qui renvoie des valeurs de type t, où t et t' sont d'autres
-    types. Les types seront défini, ainsi :
+    types. Les types seront défini, ainsi&nbsp;:
     <table class="bnf">
       <tr>
         <td> t, t' </td>
@@ -66,19 +72,21 @@
     </table>
     On peut, maintenant, implémenter cette syntaxe rudimentaire en OCaml :
     <pre class="first last new">
+<span class="k">type</span> op = Add | Sub | Mul | Div
 <span class="k">type</span> expr
  = App <span class="k">of</span> expr * expr
  | Let <span class="k">of</span> string * expr * expr
  | Lam <span class="k">of</span> string * expr
  | Var <span class="k">of</span> string
  | Int <span class="k">of</span> int
+ | Op <span class="k">of</span> expr * op * expr
 <span class="k">type</span> ty
  = TInt
  | TFun <span class="k">of</span> ty * ty</pre>
 
-    On commence par le cas le plus simple, celui d'un entier. Si, on a un entier
+    On commence par le cas le plus simple, celui d'un entier. Si on a un entier,
     alors, son type est forcément int. On peut, ainsi, commencer la fonction
-    inference :
+    inference&nbsp;:
     <pre class="first last new">
 <span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) : ty =
   <span class="k">match</span> <span class="v">e</span> <span class="k">with</span>
@@ -88,19 +96,81 @@
     problème. En effet, pour l'instant la fonction ne dispose pas d'assez
     d'information, car si l'argument de la fonction est une variable on ne
     dispose que de son nom. Pour résoudre ce problème, on ajoute un argument
-    context qui associe à chaque variable défini son type :
+    contexte qui associe à chaque variable défini son type&nbsp;:
     <pre class="first new">
 <span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) (<span class="v">ctx</span> : (string * ty) list) : ty =</pre>
     <pre class="old last">
   match e with
     Int _ -> TInt</pre>
-    
+
     Pour inférer le type d'une variable, on n'a plus qu'à le chercher dans le
-    context donné :
+    contexte donné :
     <pre class="first old">
     Int _ -> TInt</pre>
     <pre class="last new">
   | Var v -> <span class="m">List</span>.assoc ctx v</pre>
+
+    Pour inférer le type d'une application de fonction, on doit d'abord inférer
+    celui de la fonction et celui de la fonction et celui de l'argument. On
+    peut, ensuite, s'assurer que le type de la fonction est bien un type de
+    fonction, c'est à dire t&nbsp;<span class = arrow>-></span>&nbsp;t', où t
+    est égal à celui de l'argument et t' celui de l'application entière. En
+    effet le type t&nbsp;<span class = arrow>-></span>&nbsp;t' est celui des
+    fonctions dont l'argument est de type t et la valeur renvoyée de type
+    t'. Ainsi, on obtient le code suivant:
+    <pre class="first old">
+  | Var v -> List.assoc ctx v</pre>
+    <pre class="last new">
+  | App (e, e') ->
+    <span class="k">begin</span>
+      <span class="k">match</span> inference e ctx <span class="k">with</span>
+        TFun (t, t') ->
+          <span class="k">if</span> t = inference e' ctx
+          <span class="k">then</span> t'
+          <span class="k">else</span> failwith <span class="s">"Application de mauvais type."</span>
+     | _ -> failwith <span class="s">"Application à une expression qui n'est pas une fonction."</span>
+    <span class="k">end</span></pre>
+
+    Vient, maintenant, l'inference des λ-expressions, de la forme λv.e, mais on
+    fait face à un nouveau problème. En effet, si on souhaite pouvoir utiliser
+    la variable v dans l'expression e, il faut l'ajouter au contexte, mais le
+    contexte associe un type à chaque variable. On a, donc, besoin de pouvoir
+    exprimer le fait que la variable v ait un type n'étant pas encore
+    défini. Pour cela, on ajoute un nouveau type de type, les variables de type
+    que l'on notera α, β, etc. Une variable de type est un type qui est amené à
+    être remplacer — ou pas, dans un cas que l'on étudiera plus bas —, au cours
+    de l'inférence, par un autre type. Pour implémenter ces types, on créé un
+    constructeur qui contiendra un entier, pour distinguer : les différentes
+    variables de type :
+    <pre class="first old">
+ | TFun of ty * ty</pre>
+    <pre class="last new">
+ | TVar <span class="k">of</span> int</pre> 
+
+    On aura besoin de générer de nouvelles variables de type au cours de
+    l'inférence. On crée, donc, une fonction qui pourra générer de nouvelles
+    variables de types. On utilise une variable globale que l'on incrémente à
+    chaque appel pour éviter que la même variable soit générée deux fois :
+    <aside class="note" style="top:2070px;">
+      <p>Il est possible d'éviter les effets de bords, notamment grâce aux
+      monades. Cependant, le but n'est pas, ici, d'écrire le code le plus pur,
+      mais d'avoir le code le plus court et simple possible, afin d'aider la
+      compréhension de l'algorithme et de faciliter son implémentation en OCaml
+      ou dans d'autres langages. </p>
+    </aside>
+    <pre class="first old">
+ | TVar of int</pre> 
+    <pre class="new">
+let n_tvar = ref 0
+
+let new_tvar () =
+  let n = !n_tvar in
+  n_tvar := n + 1;
+  TVar n</pre>
+    <pre class="old last">
+let rec inference (e : expr) (ctx : (string * ty) list) : ty =</pre>
+
   </main>
+
 </body>
 </html>
