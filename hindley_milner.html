@@ -122,14 +122,28 @@
   | Var v -> List.assoc ctx v</pre>
     <pre class="last new">
   | App (e, e') ->
-    <span class="k">begin</span>
-      <span class="k">match</span> inference e ctx <span class="k">with</span>
-        TFun (t, t') ->
+     <span class="k">begin</span>
+       <span class="k">match</span> inference e ctx <span class="k">with</span>
+         TFun (t, t') ->
           <span class="k">if</span> t = inference e' ctx
           <span class="k">then</span> t'
           <span class="k">else</span> failwith <span class="s">"Application de mauvais type."</span>
-     | _ -> failwith <span class="s">"Application à une expression qui n'est pas une fonction."</span>
-    <span class="k">end</span></pre>
+       | _ -> failwith <span class="s">"Application à une expression qui n'est pas une fonction."</span>
+     <span class="k">end</span></pre>
+
+    On peut, maintenant, ajouter les opérations sur les entiers. Peu importe
+    l'opération, on doit juste s'assurer que les deux expressions sont des
+    entiers :
+    <pre class="first old">
+      | _ -> failwith "Application à une expression qui n'est pas une fonction."
+    end</pre>
+    <pre class="last new">
+ | Op (e, _, e') ->
+    let t = inference e ctx in
+    let t' = inference e' ctx in
+    if t = TInt && t' = TInt
+    then TInt
+    else failwith "Opérations sur des non-entiers." </pre>
 
     Vient, maintenant, l'inference des λ-expressions, de la forme λv.e, mais on
     fait face à un nouveau problème. En effet, si on souhaite pouvoir utiliser
@@ -145,26 +159,26 @@
     <pre class="first old">
  | TFun of ty * ty</pre>
     <pre class="last new">
- | TVar <span class="k">of</span> int</pre> 
+ | TVar <span class="k">of</span> int</pre>
 
     On aura besoin de générer de nouvelles variables de type au cours de
     l'inférence. On crée, donc, une fonction qui pourra générer de nouvelles
     variables de types. On utilise une variable globale que l'on incrémente à
     chaque appel pour éviter que la même variable soit générée deux fois :
-    <aside class="note" style="top:2070px;">
-      <p>Il est possible d'éviter les effets de bords, notamment grâce aux
+    <aside class="note">
+      <p>Il est possible d'éviter les effets de bords, ici, notamment grâce aux
       monades. Cependant, le but n'est pas, ici, d'écrire le code le plus pur,
       mais d'avoir le code le plus court et simple possible, afin d'aider la
       compréhension de l'algorithme et de faciliter son implémentation en OCaml
       ou dans d'autres langages. </p>
     </aside>
     <pre class="first old">
- | TVar of int</pre> 
+ | TVar of int</pre>
     <pre class="new">
-let n_tvar = ref 0
+<span class="k">let</span> <span class="v">n_tvar</span> = ref 0
 
-let new_tvar () =
-  let n = !n_tvar in
+<span class="k">let</span> <span class="f">new_tvar</span> () =
+  <span class="k">let</span> <span class="v">n</span> = !n_tvar in
   n_tvar := n + 1;
   TVar n</pre>
     <pre class="old last">
