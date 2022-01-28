@@ -148,7 +148,7 @@ aside.note pre {
     margin: 4px 0px;
 }
 
-@media screen and (width <= 1520px) {
+@media screen and (max-width: 1520px) {
     aside.note {
         margin-top: 10px;
         margin-bottom: 10px;
