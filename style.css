@@ -28,7 +28,7 @@ aside {
 }
 
 main {
-    margin-left: calc((100% - 840px) / 2);
+    margin: 0 auto;
     max-width: 820px;
     flex-grow: 1;
     display: block;
@@ -75,6 +75,7 @@ pre {
     overflow-x: auto;
     font-family: 'Fira Code';
     line-height: normal;
+    white-space: pre-wrap
 }
 
 .arrow {
@@ -150,13 +151,9 @@ aside.note pre {
 
 @media screen and (max-width: 1520px) {
     aside.note {
-        margin-top: 10px;
-        margin-bottom: 10px;
-        margin-left: calc((100% - 820px) / 2);
-        position: relative !important;
-        top: 0px !important;
-        left: 0px !important;
-        max-width: 820px !important;
+        margin: 10px 0;
+        position: unset;
+        max-width: 820px;
         width: unset;
     }
 }
