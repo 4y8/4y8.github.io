@@ -259,7 +259,7 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
   s' @ (app_subst s s')</pre>
     <pre class="last old">
 let rec inference (e : expr) (ctx : context) : ty =</pre>
-titution
+
     Il faut, maintenant, implémenter l'unification. Par ce procédé, l'algorithme
     génère l'unificateur le plus général de deux types. C'est une substitution
     qui si appliquée au deux types donnés, rendra ces deux types identiques. Si
@@ -270,7 +270,7 @@ titution
     <pre class="first old">
   s' @ (app_subst s s')</pre>
     <pre class="new">
-<span class="k">let</span> <span class="k">rec</span> <span class="f">unify</span> (<span class="v">t</span>: ty) (<span class="v">t'</span> : ty) : substitution =
+<span class="k">let</span> <span class="k">rec</span> <span class="f">unify</span> (<span class="v">t</span> : ty) (<span class="v">t'</span> : ty) : substitution =
   <span class="k">match</span> t, t' <span class="k">with</span>
     TInt, TInt -> []
   | _, _ -> failwith <span class="s">"Problème d'unification."</span></pre>
@@ -291,15 +291,6 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
     <pre class="last old">
   | _, _ -> failwith "Problème d'unification."</pre>
 
-    On peut, maintenant, implémenter l'unification dans le cas ou un des deux
-    types est une variable de type. On cherche donc à unifier les types t et
-    α. On ne peut se contenter de remplacer α par t. En effet, si t est égal à
-    α&nbsp;<span class="arrow">-></span>&nbsp;α, alors, en remplaçant t par α,
-    on crée une boucle infinie, car α, sera égal à
-    α&nbsp;<span class="arrow">-></span>&nbsp;α, puis à
-    (α&nbsp;<span class="arrow">-></span>&nbsp;α)&nbsp;<span class="arrow">-></span>&nbsp;(α&nbsp;<span class="arrow">-></span>&nbsp;α),
-    etc. On doit, donc, s'assurer qu'α n'apparaisse pas dans t, c'est le test
-    d'occurrence — occurrence check, en anglais.
     <aside class="note">
       <p>
         On peut rencontrer ce test en OCaml. En effet, le bout de code suivant :
@@ -316,6 +307,43 @@ Error: This expression has type 'a -> 'b
 The type variable 'a occurs inside
 'a -> 'b</pre>
     </aside>
+    On peut, maintenant, implémenter l'unification dans le cas ou un des deux
+    types est une variable de type. On cherche donc à unifier les types t et
+    α. On ne peut se contenter de remplacer α par t. En effet, si t est égal à
+    α&nbsp;<span class="arrow">-></span>&nbsp;α, alors, en remplaçant t par α,
+    on crée une boucle infinie, car α, sera égal à
+    α&nbsp;<span class="arrow">-></span>&nbsp;α, puis à
+    (α&nbsp;<span class="arrow">-></span>&nbsp;α)&nbsp;<span class="arrow">-></span>&nbsp;(α&nbsp;<span class="arrow">-></span>&nbsp;α),
+    etc. On doit, donc, s'assurer qu'α n'apparaisse pas dans t, c'est le test
+    d'occurrence — occurrence check, en anglais. Pour implémenter ce test, on
+    doit d'abord écrire une fonction nous permettant d'avoir une liste des
+    variables de types présentes dans un type. Dans le cas d'un type constant,
+    il n'y a pas de variable de type. Pour une variable de type, il n'y a que
+    cette variable de type. Et dans le cas d'un type de fonction, c'est la
+    réunion des variables de types des deux types le composant :
+    <pre class="first old">
+  s' @ (app_subst s s')</pre>
+    <pre class="new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">ftv</span> (<span class="v">t</span> : ty) : int list =
+  <span class="k">match</span> t <span class="k">with</span>
+    TInt -> []
+  | TVar v -> [v]
+  | TFun (t, t') -> (ftv t) @ (ftv t')</pre>
+    <pre class="last old">
+let rec unify (t : ty) (t' : ty) : substitution =</pre>
+
+    On peut maintenant implémenter l'unficiation en présence d'une variable de type :
+    <pre class="first old">
+     compose_subst s s'</pre>
+    <pre class="new">
+  | TVar v, t
+  | t, TVar v ->
+     <span class="k">if</span> List.mem v (ftv t)
+     <span class="k">then</span> failwith <span class="s">"Erreur du test d'occurence"</span>
+     <span class="k">else</span> [(v, t)]
+</pre>
+    <pre class="last old">
+  | _, _ -> failwith "Problème d'unification."</pre>
   </main>
 
 </body>
