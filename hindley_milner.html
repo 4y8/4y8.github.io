@@ -340,10 +340,29 @@ let rec unify (t : ty) (t' : ty) : substitution =</pre>
   | t, TVar v ->
      <span class="k">if</span> List.mem v (ftv t)
      <span class="k">then</span> failwith <span class="s">"Erreur du test d'occurence"</span>
-     <span class="k">else</span> [(v, t)]
-</pre>
+     <span class="k">else</span> [(v, t)]</pre>
     <pre class="last old">
   | _, _ -> failwith "Problème d'unification."</pre>
+
+    Maintenant que nous avons implémenté l'unification et les substitutions, on
+    peut adapter l'inférence de type, pour les prendre en compte. La fonction
+    inférence, doit, en plus du type du terme, renvoyer une substitution qui
+    permet de rendre compte de l'avancement de l'unficiation. Dans le cas d'une
+    variable ou d'une variable on renvoie une substitutions vides : 
+    <pre class="first old">
+type context = (string * ty) list</pre>
+    <pre class="new">
+<span class="k">let</span> <span class="k">rec</span> <span class="f">inference</span> (<span class="v">e</span> : expr) (<span class="v">ctx</span> : context) : (ty * substitution) =
+  <span class="k">match</span> e <span class="k">with</span>
+    Int _ -> TInt, []
+  | Var v -> List.assoc ctx v, []
+</pre>
+    <pre class="last old">
+  | App (e, e') -></pre> 
+
+    Au lieu de tester si deux types sont égaux, comme pour l'application de
+    fonction, on va essayer de les unifier. Ainsi, pour l'application, on
+    unifiera le type de l'argument et celui qu'il est censé avoir :
   </main>
 
 </body>
