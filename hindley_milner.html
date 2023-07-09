@@ -149,7 +149,7 @@
       | _ -> failwith "Application à une expression qui n'est pas une fonction."
     end</pre>
     <pre class="last new">
- | Op (e, _, e') ->
+  | Op (e, _, e') ->
     <span class="k">let</span> <span class="v">t</span> = inference e ctx <span class="k">in</span>
     <span class="k">let</span> <span class="v">t'</span> = inference e' ctx <span class="k">in</span>
     <span class="k">if</span> <span class="v">t</span> = TInt && t' = TInt
@@ -169,9 +169,9 @@
     constructeur qui contiendra un entier, pour distinguer : les différentes
     variables de type :
     <pre class="first old">
- | TFun of ty * ty</pre>
+  | TFun of ty * ty</pre>
     <pre class="last new">
- | TVar <span class="k">of</span> int</pre>
+  | TVar <span class="k">of</span> int</pre>
 
     On aura besoin de générer de nouvelles variables de type au cours de
     l'inférence. On crée, donc, une fonction qui pourra générer de nouvelles
@@ -185,7 +185,7 @@
       ou dans d'autres langages. </p>
     </aside>
     <pre class="first old">
- | TVar of int</pre>
+  | TVar of int</pre>
     <pre class="new">
 <span class="k">let</span> <span class="v">n_tvar</span> = ref 0
 
@@ -256,7 +256,9 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
   | (n, t) :: tl -> (n, app_subst t s') :: app_subst_subst tl s'
 
 <span class="k">let</span> <span class="k">rec</span> <span class="f">compose_subst</span> (<span class="v">s</span>: substitution) (<span class="v">s'</span> : substitution) : substitution =
-  s' @ (app_subst s s')</pre>
+  s' @ (app_subst s s')
+
+<span class="k">let</span> (<span class="v">@%</span>) = compose_subst</pre>
     <pre class="last old">
 let rec inference (e : expr) (ctx : context) : ty =</pre>
 
@@ -268,7 +270,7 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
     est générée sinon, car il n'existe pas de substitution rendant ces deux
     types égaux :
     <pre class="first old">
-  s' @ (app_subst s s')</pre>
+let (@%) = compose_subst</pre>
     <pre class="new">
 <span class="k">let</span> <span class="k">rec</span> <span class="f">unify</span> (<span class="v">t</span> : ty) (<span class="v">t'</span> : ty) : substitution =
   <span class="k">match</span> t, t' <span class="k">with</span>
@@ -287,7 +289,7 @@ let rec inference (e : expr) (ctx : context) : ty =</pre>
   | TFun (d, a), TFun (d', a') ->
      <span class="k">let</span> <span class="v">s</span> = unify d d' <span class="k">in</span>
      <span class="k">let</span> <span class="v">s'</span> = unify a a' <span class="k">in</span>
-     compose_subst s s'</pre>
+     s @% s'</pre>
     <pre class="last old">
   | _, _ -> failwith "Problème d'unification."</pre>
 
@@ -334,7 +336,7 @@ let rec unify (t : ty) (t' : ty) : substitution =</pre>
 
     On peut maintenant implémenter l'unficiation en présence d'une variable de type :
     <pre class="first old">
-     compose_subst s s'</pre>
+     s @% s'</pre>
     <pre class="new">
   | TVar v, t
   | t, TVar v ->
@@ -361,8 +363,44 @@ type context = (string * ty) list</pre>
   | App (e, e') -></pre> 
 
     Au lieu de tester si deux types sont égaux, comme pour l'application de
-    fonction, on va essayer de les unifier. Ainsi, pour l'application, on
-    unifiera le type de l'argument et celui qu'il est censé avoir :
+    fonction, on va essayer de les unifier. Pour l'application, on sait que le
+    type de la fonction doit être un type de fonction dont on connaît le type de
+    l'argument :
+<pre class="first old">
+  | Var v -> List.assoc ctx v, []
+</pre>
+    <pre class="new">
+  | App (f, x) ->
+    <span class="k">let</span> <span class="v">t</span>, <span class="v">s</span> = infer f ctx <span class="k">in</span>
+    <span class="k">let</span> <span class="v">ctx</span> = app_subst_ctx ctx s <span class="k">in</span>
+    <span class="k">let</span> <span class="v">t'</span>, <span class="v">s'</span> = infer x ctx <span class="k">in</span>
+    <span class="k">let</span> <span class="v">a</span> = new_tvar () <span class="k">in</span>
+    <span class="k">let</span> <span class="v">s</span> = s @% s' <span class="k">in</span>
+    <span class="k">let</span> <span class="v">s'</span> = unify (Tfun (t', a)) (app_subst t) <span class="k">in</span>
+    <span class="k">let</span> <span class="v">s</span> = s @% s' <span class="k">in</span> 
+    app_subst t s, s
+</pre>
+    <pre class="last old">
+  | Op (e, _, e') ->
+</pre>
+    Pour cela, on unifie le type de la fonction avec
+    t&nbsp;<span class="arrow">-></span>&nbsp;α, où t est le type de l'argument
+    et α une variable de type fraîche. Les opérations arithmétiques étant des
+    fonctions, la procédure est la même sauf que le type que doivent avoir les
+    arguments est déjà connu :
+<pre class="first old">
+    app_subst t s, s
+</pre>
+
+    <pre class="new">
+  | Op (e, _, e') ->
+    <span class="k">let</span> <span class="v">t</span>, <span class="v">s</span> = infer e ctx <span class="k">in</span> 
+    <span class="k">let</span> <span class="v">ctx</span> = app_subst_ctx ctx s <span class="k">in</span>
+    <span class="k">let</span> <span class="v">t'</span>, <span class="v">s'</span> = infer e' ctx <span class="k">in</span> 
+    <span class="k">let</span> <span class="v">t</span> = app_subst t s' <span class="k">in</span>
+    <span class="k">let</span> <span class="v">s</span> = s @% s' @% unify t TInt @% unify t' TInt<span class="k">in</span>
+    TInt, s
+</pre>
   </main>
 
 </body>
